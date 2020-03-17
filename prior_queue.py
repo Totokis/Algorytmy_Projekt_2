@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 class _Sort:
     def sort(self,_lista,head,tail):
         lista = _lista
@@ -62,7 +64,7 @@ class _TailIncrement:
         
 #
 class Stack():
-    def __init__(self,limit):
+    def __init__(self,limit, tail_increment: _TailIncrement):
         self._lista=[]
         self._limit = limit
         #*Zapełnienie listy#TODO zmienić na NULL
@@ -127,9 +129,5 @@ class Stack():
         element = self._lista[self._head]
         print(f"Pierwszy element to {element}")
         return element
-
-
-
-
 
 
