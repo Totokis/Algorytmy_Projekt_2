@@ -96,7 +96,7 @@ class Enqueue(_EnqueueInterface):
         else:
             lista[tail] = x
             tail = self._tail_increment.tail_increment(tail, limit)
-
+            
 class Dequeue(_DequeueInterface):
     def __init__(self, head_increment: _HeadIncrementInterface):
         self._head_increment = head_increment
@@ -216,6 +216,7 @@ peek = Peek()
 print_content = PrintContent()
 clear_buffer = ClearBuffer()
 queue = Queue(10,is_empty,size,enqueue,dequeue,peek,print_content,clear_buffer)
+
 
 queue.print_content()
 
