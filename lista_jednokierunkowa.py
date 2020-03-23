@@ -44,7 +44,12 @@ class AddInterface(ABC):
     def add(self,x,lista:OneWayListInterface): pass
 
 class IsFirst(IsFirstIntefrace):
-    def is_first(self,lista:OneWayListInterface): True if lista.get_first() else False
+    def is_first(self,lista:OneWayListInterface): 
+        if lista.get_first() != None:
+            return True
+            print("tutaj")
+        else:
+            return False
 
 class ElementInterface(ABC):
     @abstractmethod
@@ -54,7 +59,7 @@ class ElementInterface(ABC):
     def get_next(self): pass
 
     @abstractmethod
-    def set_next(self): pass
+    def set_next(self, next): pass
 
     @abstractmethod
     def get_content(self): pass
@@ -66,12 +71,25 @@ class IsEmptyInterface(ABC):
 class IsEmpty(IsEmptyInterface):
     def is_empty(self, lista: OneWayListInterface): True if lista.get_first() else False
 
+class Element(ElementInterface):
+    def __init__(self,x):
+        self._content = x
+        self._previous = None
+        self._next = None
+
+    def get_next(self): return self._next
+    
+    def set_next(self, next): self._next = next
+
+    def get_content(self): return self._content
+
 class Add(AddInterface):
     def __init__(self,is_first:IsFirstIntefrace): 
         self._is_first = is_first
 
     def add(self,x,lista:OneWayListInterface):
         if self._is_first.is_first(lista):
+            print("is first")
             element = Element(x)#stwórz element
             last = lista.get_last()#wyślij jego adres do poprzedniego elementu
             last.set_next(element)
@@ -81,18 +99,6 @@ class Add(AddInterface):
             lista.set_first(element)
             lista.set_last(element)
 
-class Element(ElementInterface):
-    def __init__(self,x):
-        self._content = x
-        self._previous = None
-        self._next = None
-
-    def get_next(self): return self._next
-    
-    def set_next(self,next): self._next = next
-
-    def get_content(self): return self._content
-
 class OneWayList(ListInterface,OneWayListInterface):
     def __init__(self,add:AddInterface):
         self._first:Element = None
@@ -101,7 +107,7 @@ class OneWayList(ListInterface,OneWayListInterface):
     
     def get_first(self): return self._first
 
-    def get_last(self): return self._first
+    def get_last(self): return self._last
 
     def set_first(self, first): self._first = first
 
@@ -129,3 +135,4 @@ if __name__ == '__main__':
     lista.add("next")
     print(lista.get_first().get_content())
     print(lista.get_last().get_content())
+    
