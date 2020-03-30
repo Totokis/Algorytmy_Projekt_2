@@ -22,7 +22,7 @@ class ListInterface(ABC):
     @abstractmethod
     def find_all(self,condition):  pass
 
-class OneWayListInterface(ABC):
+class CircularListInterface(ABC):
     @abstractmethod
     def get_first(self): pass
 
@@ -41,10 +41,10 @@ class IsFirstIntefrace(ABC):
 
 class AddInterface(ABC):
     @abstractmethod
-    def add(self,x,lista:OneWayListInterface): pass
+    def add(self,x,lista:CircularListInterface): pass
 
 class IsFirst(IsFirstIntefrace):
-    def is_first(self,lista:OneWayListInterface): 
+    def is_first(self,lista:CircularListInterface): 
         if lista.get_first() != None:
             return True
             print("tutaj")
@@ -66,33 +66,34 @@ class ElementInterface(ABC):
 
 class IsEmptyInterface(ABC):
     @abstractmethod
-    def is_empty(self, lista: OneWayListInterface): pass
+    def is_empty(self, lista: CircularListInterface): pass
 
 class SizeInterface(ABC):
     @abstractmethod
-    def size(self,lista: OneWayListInterface): pass
+    def size(self,lista: CircularListInterface): pass
 
 class InsertInterface(ABC):
     @abstractmethod
-    def insert(self, x, a:int, list:OneWayListInterface): pass
+    def insert(self, x, a:int, list:CircularListInterface): pass
 
 class RemoveInterface(ABC):
     @abstractmethod
-    def remove(self, lista:OneWayListInterface, x): pass
+    def remove(self, lista:CircularListInterface, x): pass
 
 class RemoveAtInterface(ABC):
     @abstractmethod
-    def remove_at(self,a:int, lista:OneWayListInterface): pass
+    def remove_at(self,a:int, lista:CircularListInterface): pass
 
 class FindAllInterface(ABC):
     @abstractmethod
-    def find_all(self, lista:OneWayListInterface, x): pass
+    def find_all(self, lista:CircularListInterface, x): pass
 
 class FindAll(FindAllInterface):
-    def find_all(self, lista:OneWayListInterface, x):
+    def find_all(self, lista:CircularListInterface, x):
         element:ElementInterface = lista.get_first()
         counter:int = 0
         indeks:int = 0
+        head = element
         while element:
             if element.get_content()== x:
                 counter+=1
@@ -100,6 +101,8 @@ class FindAll(FindAllInterface):
                 
             element = element.get_next()
             indeks+=1
+            if head == element:
+                break
         if not counter:
             print("Brak elementów spełniających warunki")
 
@@ -107,64 +110,46 @@ class RemoveAt(RemoveAtInterface):
     def __init__(self,size:SizeInterface):
         self._size = size
         
-    def remove_at(self, a, lista:OneWayListInterface):
-        size:int = self._size.size(lista)
-        if size <= a:
-            print("za duza wartość")
-            return None
-        else:
-            element:ElementInterface = lista.get_first()
-            if a == 0:
-                lista.set_first(element.get_next())
-                del element
-                return None
-
-            element_previous:ElementInterface = None
+    def remove_at(self, a, lista:CircularListInterface):
+        if a==0:
+            x = lista.get_first()
+            b = None
             while True:
-                if a:
-                    element_previous = element
-                    element = element.get_next()
-                    a-=1
-                else:
-                    element_previous.set_next(element.get_next())
-                    del element
-                    break
+                b = x
+                x = x.get_next()
+                if x== lista.get_first(): break
+            b.set_next(x.get_next())
+            return None
+        element = lista.get_first()
+        while a:
+            element = element.get_next()
+            a-=1
+        element.set_next(element.get_next().get_next())
+        return None
 
 class Remove(RemoveInterface):
-    def remove(self,lista:OneWayListInterface, x):
-        element = lista.get_first()
-        previous:ElementInterface = None
-        if element.get_content() == x:
-            replace = element.get_next()
-            #destruktor elementu
-            del element
-            lista.set_first(replace)
-            return None
-
-        while element:
-            if str(element.get_content()) == str(x):
-                replace = element.get_next()
-                element.set_next(None)
-                del element
-                #print("destruktor elementu")
-                previous.set_next(replace)
-                return None
-            previous = element
-            element = element.get_next()
-        print("Nie ma takiego elementu")
+    def remove(self,lista:CircularListInterface):
+        head:Element = lista.get_first()
+        if head:
+            element = head.get_next()
+            head.set_next(element.get_next())
+            if element == head:
+                lista.set_first(None)
+                del head
 
 class Size(SizeInterface):
-    def size(self, lista:OneWayListInterface):
+    def size(self, lista:CircularListInterface):
+        head = lista.get_first()
         count = 0
-        element = lista.get_first()
+        element = head
         while element:
             count +=1
-            print("--"+element.get_content()+"--")
             element = element.get_next()
+            if element == head: break
         return count
 
 class IsEmpty(IsEmptyInterface):
-    def is_empty(self, lista: OneWayListInterface): 
+    def is_empty(self, lista: CircularListInterface): 
         if lista.get_first():
             print("Nie jest pusta")
             return False
@@ -172,14 +157,49 @@ class IsEmpty(IsEmptyInterface):
             print("Jest pusta")
             return True
 
+class Add(AddInterface):
+    def __init__(self,is_first:IsFirstIntefrace): 
+        self._is_first = is_first
+
+    def add(self,x,lista:CircularListInterface):
+        element = Element(x)
+        head:Element = lista.get_first()
+        if not head :
+            element.set_next(element)
+            lista.set_first(element)
+        else:
+            element.set_next(head.get_next())
+            head.set_next(element)
+            lista.set_first(element)
+    
+class Insert(InsertInterface):
+    def __init__(self,size:SizeInterface,add: AddInterface):
+        self._size = size
+        self._add = add
+    def insert(self, x, a:int, lista: CircularListInterface):
+        new = Element(x)
+        if a==0:
+            head:Element = lista.get_first()
+            new.set_next(head.get_next())
+            head.set_next(new)
+            lista.set_first(new)
+            return None
+
+        element = lista.get_first()
+        while a:
+            element = element.get_next()
+            a-=1
+        head = element
+        element = new
+        element.set_next(head.get_next())
+        head.set_next(element)
+        lista.set_first(element)
+
 class Element(ElementInterface):
     def __init__(self,x):
         self._content = x
-        self._previous = None
         self._next = None
-    def __del__(self):
-        pass
-        #print(f"Element {self._content} został usunięty")
+    def __del__(self): pass
 
     def get_next(self): return self._next
     
@@ -187,48 +207,7 @@ class Element(ElementInterface):
 
     def get_content(self): return self._content
 
-class Add(AddInterface):
-    def __init__(self,is_first:IsFirstIntefrace): 
-        self._is_first = is_first
-
-    def add(self,x,lista:OneWayListInterface):
-        if self._is_first.is_first(lista):
-            #print("is first")
-            element = Element(x)#stwórz element
-            last = lista.get_last()#wyślij jego adres do poprzedniego elementu
-            last.set_next(element)
-            #print("Tutaj")
-            lista.set_last(element)#ustaw ten element jako ostatni
-        else:
-            element = Element(x)
-            lista.set_first(element)
-            lista.set_last(element)
-
-class Insert(InsertInterface):
-
-    def __init__(self,size:SizeInterface,add: AddInterface):
-        self._size = size
-        self._add = add
-    def insert(self, x, a:int, list:OneWayListInterface):
-        if a >= self._size.size(list):
-            self._add.add(x,lista)
-        elif self._size.size(list) == a:
-            self._add.add(x,lista)
-        else:
-            new = Element(x)
-            element = list.get_first()
-            element_previous = None
-            while True:
-                if a:
-                    element_previous = element
-                    element = element.get_next()
-                    a-=1
-                else:
-                    new.set_next(element)
-                    if element_previous: element_previous.set_next(new)
-                    break
-
-class OneWayList(ListInterface,OneWayListInterface):
+class TwoWayList(ListInterface,CircularListInterface):
     def __init__(self,add:AddInterface, is_empty: IsEmptyInterface, 
     size: SizeInterface, insert: InsertInterface, remove:RemoveInterface, remove_at: RemoveAtInterface, find_all: FindAllInterface):
         self._first:Element = None
@@ -263,6 +242,17 @@ class OneWayList(ListInterface,OneWayListInterface):
     
     def find_all(self,condition):  self._find_all.find_all(self,condition)
 
+    def print_from_first(self): 
+
+
+        element = self.get_first()
+        while element:
+            element = element.get_next()
+            print(element.get_content())
+            if element == self.get_first():
+                break
+
+
 if __name__ == '__main__':
     is_first = IsFirst()
     add = Add(is_first)
@@ -272,5 +262,11 @@ if __name__ == '__main__':
     remove = Remove()
     remove_at = RemoveAt(size)
     find_all = FindAll()
-    lista = OneWayList(add,is_empty,size,insert,remove,remove_at,find_all)
-    #!Test funkcji 
+    lista = TwoWayList(add,is_empty,size,insert,remove,remove_at,find_all)
+    #!Test funkcji
+    lista.add("pierwszy")
+    lista.add("drugi")
+    lista.add("trzeci")
+    lista.insert("czwarty",0)
+    lista.remove_at(2)
+    lista.print_from_first()

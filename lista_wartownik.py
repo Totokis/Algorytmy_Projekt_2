@@ -22,7 +22,7 @@ class ListInterface(ABC):
     @abstractmethod
     def find_all(self,condition):  pass
 
-class OneWayListInterface(ABC):
+class SentryListInterface(ABC):
     @abstractmethod
     def get_first(self): pass
 
@@ -41,10 +41,10 @@ class IsFirstIntefrace(ABC):
 
 class AddInterface(ABC):
     @abstractmethod
-    def add(self,x,lista:OneWayListInterface): pass
+    def add(self,x,lista:SentryListInterface): pass
 
 class IsFirst(IsFirstIntefrace):
-    def is_first(self,lista:OneWayListInterface): 
+    def is_first(self,lista:SentryListInterface): 
         if lista.get_first() != None:
             return True
             print("tutaj")
@@ -66,48 +66,51 @@ class ElementInterface(ABC):
 
 class IsEmptyInterface(ABC):
     @abstractmethod
-    def is_empty(self, lista: OneWayListInterface): pass
+    def is_empty(self, lista: SentryListInterface): pass
 
 class SizeInterface(ABC):
     @abstractmethod
-    def size(self,lista: OneWayListInterface): pass
+    def size(self,lista: SentryListInterface): pass
 
 class InsertInterface(ABC):
     @abstractmethod
-    def insert(self, x, a:int, list:OneWayListInterface): pass
+    def insert(self, x, a:int, list:SentryListInterface): pass
 
 class RemoveInterface(ABC):
     @abstractmethod
-    def remove(self, lista:OneWayListInterface, x): pass
+    def remove(self, lista:SentryListInterface, x): pass
 
 class RemoveAtInterface(ABC):
     @abstractmethod
-    def remove_at(self,a:int, lista:OneWayListInterface): pass
+    def remove_at(self,a:int, lista:SentryListInterface): pass
 
 class FindAllInterface(ABC):
     @abstractmethod
-    def find_all(self, lista:OneWayListInterface, x): pass
+    def find_all(self, lista:SentryListInterface, x): pass
 
 class FindAll(FindAllInterface):
-    def find_all(self, lista:OneWayListInterface, x):
+    def find_all(self, lista:SentryListInterface, x):
+        #!Zmiana funkcji find all na wersję by pokazać działanie wartownika
+        sentry = Element(x)
+        lista.get_last().set_next(sentry)
         element:ElementInterface = lista.get_first()
-        counter:int = 0
-        indeks:int = 0
+        indeks = 0
         while element:
-            if element.get_content()== x:
-                counter+=1
-                print(f"Element spełniający warunek: {x} o indeksie {indeks}")
-                
+            if element ==  sentry:
+                print("Brak elemetu")
+                lista.get_last().set_next(None)
+                return None
+            elif element.get_content() == x: 
+                print(f"Element o indeksie {indeks}")
+                return None
             element = element.get_next()
-            indeks+=1
-        if not counter:
-            print("Brak elementów spełniających warunki")
+        
 
 class RemoveAt(RemoveAtInterface):
     def __init__(self,size:SizeInterface):
         self._size = size
         
-    def remove_at(self, a, lista:OneWayListInterface):
+    def remove_at(self, a, lista:SentryListInterface):
         size:int = self._size.size(lista)
         if size <= a:
             print("za duza wartość")
@@ -131,7 +134,7 @@ class RemoveAt(RemoveAtInterface):
                     break
 
 class Remove(RemoveInterface):
-    def remove(self,lista:OneWayListInterface, x):
+    def remove(self,lista:SentryListInterface, x):
         element = lista.get_first()
         previous:ElementInterface = None
         if element.get_content() == x:
@@ -154,7 +157,7 @@ class Remove(RemoveInterface):
         print("Nie ma takiego elementu")
 
 class Size(SizeInterface):
-    def size(self, lista:OneWayListInterface):
+    def size(self, lista:SentryListInterface):
         count = 0
         element = lista.get_first()
         while element:
@@ -164,7 +167,7 @@ class Size(SizeInterface):
         return count
 
 class IsEmpty(IsEmptyInterface):
-    def is_empty(self, lista: OneWayListInterface): 
+    def is_empty(self, lista: SentryListInterface): 
         if lista.get_first():
             print("Nie jest pusta")
             return False
@@ -191,7 +194,7 @@ class Add(AddInterface):
     def __init__(self,is_first:IsFirstIntefrace): 
         self._is_first = is_first
 
-    def add(self,x,lista:OneWayListInterface):
+    def add(self,x,lista:SentryListInterface):
         if self._is_first.is_first(lista):
             #print("is first")
             element = Element(x)#stwórz element
@@ -209,7 +212,7 @@ class Insert(InsertInterface):
     def __init__(self,size:SizeInterface,add: AddInterface):
         self._size = size
         self._add = add
-    def insert(self, x, a:int, list:OneWayListInterface):
+    def insert(self, x, a:int, list:SentryListInterface):
         if a >= self._size.size(list):
             self._add.add(x,lista)
         elif self._size.size(list) == a:
@@ -228,7 +231,7 @@ class Insert(InsertInterface):
                     if element_previous: element_previous.set_next(new)
                     break
 
-class OneWayList(ListInterface,OneWayListInterface):
+class SentryList(ListInterface,SentryListInterface):
     def __init__(self,add:AddInterface, is_empty: IsEmptyInterface, 
     size: SizeInterface, insert: InsertInterface, remove:RemoveInterface, remove_at: RemoveAtInterface, find_all: FindAllInterface):
         self._first:Element = None
@@ -272,5 +275,6 @@ if __name__ == '__main__':
     remove = Remove()
     remove_at = RemoveAt(size)
     find_all = FindAll()
-    lista = OneWayList(add,is_empty,size,insert,remove,remove_at,find_all)
+    lista = SentryList(add,is_empty,size,insert,remove,remove_at,find_all)
+    
     #!Test funkcji 

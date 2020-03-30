@@ -8,7 +8,7 @@ class ListInterface(ABC):
     def is_empty(self):  pass
 
     @abstractmethod
-    def size(self)->int: pass
+    def size(self):  pass
 
     @abstractmethod
     def insert(self, x, a):  pass
@@ -83,42 +83,16 @@ class RemoveInterface(ABC):
 class RemoveAtInterface(ABC):
     @abstractmethod
     def remove_at(self,a:int, lista:OneWayListInterface): pass
-
 class FindAllInterface(ABC):
     @abstractmethod
     def find_all(self, lista:OneWayListInterface, x): pass
-
-class FindAll(FindAllInterface):
-    def find_all(self, lista:OneWayListInterface, x):
-        element:ElementInterface = lista.get_first()
-        counter:int = 0
-        indeks:int = 0
-        while element:
-            if element.get_content()== x:
-                counter+=1
-                print(f"Element spełniający warunek: {x} o indeksie {indeks}")
-                
-            element = element.get_next()
-            indeks+=1
-        if not counter:
-            print("Brak elementów spełniających warunki")
-
 class RemoveAt(RemoveAtInterface):
-    def __init__(self,size:SizeInterface):
-        self._size = size
-        
-    def remove_at(self, a, lista:OneWayListInterface):
-        size:int = self._size.size(lista)
-        if size <= a:
+    def remove_at(self, a, lista):
+        if a >= lista._size.size(list):
             print("za duza wartość")
             return None
         else:
-            element:ElementInterface = lista.get_first()
-            if a == 0:
-                lista.set_first(element.get_next())
-                del element
-                return None
-
+            element:ElementInterface = list.get_first()
             element_previous:ElementInterface = None
             while True:
                 if a:
@@ -230,7 +204,7 @@ class Insert(InsertInterface):
 
 class OneWayList(ListInterface,OneWayListInterface):
     def __init__(self,add:AddInterface, is_empty: IsEmptyInterface, 
-    size: SizeInterface, insert: InsertInterface, remove:RemoveInterface, remove_at: RemoveAtInterface, find_all: FindAllInterface):
+    size: SizeInterface, insert: InsertInterface, remove:RemoveInterface, remove_at: RemoveAtInterface):
         self._first:Element = None
         self._last:Element = None
         self._add = add
@@ -239,7 +213,6 @@ class OneWayList(ListInterface,OneWayListInterface):
         self._insert = insert
         self._remove = remove
         self._remove_at = remove_at
-        self._find_all = find_all
 
     def get_first(self): return self._first
 
@@ -261,7 +234,7 @@ class OneWayList(ListInterface,OneWayListInterface):
     
     def remove_at(self,a):  self._remove_at.remove_at(a,self)
     
-    def find_all(self,condition):  self._find_all.find_all(self,condition)
+    def find_all(self,condition):  pass
 
 if __name__ == '__main__':
     is_first = IsFirst()
@@ -270,7 +243,14 @@ if __name__ == '__main__':
     size = Size()
     insert = Insert(size,add)
     remove = Remove()
-    remove_at = RemoveAt(size)
-    find_all = FindAll()
-    lista = OneWayList(add,is_empty,size,insert,remove,remove_at,find_all)
-    #!Test funkcji 
+    lista = OneWayList(add,is_empty,size,insert,remove)
+    lista.add("pierwszy")
+    lista.add("drugi")
+    lista.add("trzeci")
+    #lista.insert("drugi_v2",3)
+    lista.add("ostatni")
+    lista.size()
+    lista.remove("dsds")
+    lista.add("czwarty")
+    lista.size()
+    #!test komentarza
